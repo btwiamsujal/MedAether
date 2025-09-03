@@ -268,11 +268,19 @@ def profile():
     user = db.users.find_one({'_id': ObjectId(session['user_id'])})
     
     if request.method == 'POST':
+        # Get all form data
+        medical_history = [hist for hist in request.form.getlist('medical_history') if hist.strip()]
+        
         update_data = {
             'name': request.form['name'],
             'age': int(request.form['age']),
             'gender': request.form['gender'],
-            'medical_history': request.form.getlist('medical_history')
+            'medical_history': medical_history,
+            'blood_group': request.form.get('blood_group', ''),
+            'phone': request.form.get('phone', ''),
+            'emergency_contact': request.form.get('emergency_contact', ''),
+            'address': request.form.get('address', ''),
+            'last_updated': datetime.utcnow()
         }
         
         db.users.update_one(
@@ -280,8 +288,20 @@ def profile():
             {'$set': update_data}
         )
         
+        # Recalculate health status after medical history update
+        updated_user = db.users.find_one({'_id': ObjectId(session['user_id'])})
+        new_health_status = calculate_health_status(updated_user)
+        
+        if new_health_status != user.get('health_status'):
+            db.users.update_one(
+                {'_id': ObjectId(session['user_id'])},
+                {'$set': {'health_status': new_health_status}}
+            )
+            flash(f'Profile updated successfully! Health status updated to {new_health_status.title()}.', 'success')
+        else:
+            flash('Profile updated successfully!', 'success')
+        
         session['user_name'] = update_data['name']
-        flash('Profile updated successfully!', 'success')
         return redirect(url_for('profile'))
     
     return render_template('profile.html', user=user)

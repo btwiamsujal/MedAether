@@ -498,7 +498,10 @@ async def get_ai_medical_advice(message, language='en'):
     """Get medical advice from AI"""
     try:
         if OPENAI_API_KEY:
-            response = await openai.ChatCompletion.acreate(
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            
+            response = await client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {

@@ -111,13 +111,22 @@ body {
 
 .chat-message.user {
     background-color: var(--primary-color);
-    color: white;
+    color: white !important;
     margin-left: auto;
 }
 
 .chat-message.ai {
     background-color: #e9ecef;
-    color: var(--dark-color);
+    color: var(--dark-color) !important;
+}
+
+/* Ensure text visibility in light backgrounds */
+.bg-light {
+    color: var(--dark-color) !important;
+}
+
+.bg-light p, .bg-light span, .bg-light div {
+    color: var(--dark-color) !important;
 }
 
 /* Health Card Styles */

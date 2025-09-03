@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}AI Chat - MedAether{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>MedAether AI Chat
+                    </h3>
+                    <p class="mb-0 small">Get medical guidance with multilingual support</p>
+                </div>
+                
+                <div class="card-body" style="height: 500px; overflow-y: auto;" id="chatContainer">
+                    <!-- Chat History -->
+                    {% for chat in chat_history %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-end mb-2">
+                            <div class="bg-primary text-white p-3 rounded-3" style="max-width: 70%;">
+                                <strong>You:</strong> {{ chat.user_message }}
+                                <div class="small text-light mt-1">{{ chat.timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-start">
+                            <div class="bg-light p-3 rounded-3" style="max-width: 70%;">
+                                <strong>MedAether AI:</strong> {{ chat.ai_response }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not chat_history %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-comments" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3">Start a conversation</h5>
+                        <p>Ask me about your health concerns, symptoms, or general medical questions.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer">
+                    <form id="chatForm">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <select class="form-select" id="language" name="language">
+                                    <option value="en">English</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="zh">Chinese</option>
+                                    <option value="ar">Arabic</option>
+                                    <option value="pt">Portuguese</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <input type="text" class="form-control" id="message" name="message" 
+                                       placeholder="Ask me about your health concerns..." required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100" id="sendButton">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Voice Input Button -->
+                    <div class="text-center mt-2">
+                        <button class="btn btn-outline-secondary btn-sm" id="voiceButton">
+                            <i class="fas fa-microphone me-1"></i>Voice Input
+                        </button>
+                        <small class="text-muted ms-2">Click to speak your question</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Disclaimer -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Medical Disclaimer:</strong> This AI provides general health information only. 
+                Always consult qualified healthcare professionals for diagnosis, treatment, and medical advice. 
+                In case of emergency, contact your local emergency services immediately.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('message');
+    const languageSelect = document.getElementById('language');
+    const sendButton = document.getElementById('sendButton');
+    const chatContainer = document.getElementById('chatContainer');
+    const voiceButton = document.getElementById('voiceButton');
+    
+    // Auto-scroll to bottom
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    // Handle form submission
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        const language = languageSelect.value;
+        
+        if (!message) return;
+        
+        // Disable form while processing
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        // Add user message to chat
+        addMessageToChat('You', message, true);
+        messageInput.value = '';
+        
+        try {
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('language', language);
+            
+            const response = await fetch('{{ url_for("ai_chat") }}', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            // Add AI response to chat
+            addMessageToChat('MedAether AI', data.response, false);
+            
+        } catch (error) {
+            addMessageToChat('MedAether AI', 'Sorry, I encountered an error. Please try again.', false);
+        }
+        
+        // Re-enable form
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        messageInput.focus();
+    });
+    
+    // Voice input functionality
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        
+        voiceButton.addEventListener('click', function() {
+            recognition.start();
+            voiceButton.innerHTML = '<i class="fas fa-microphone-slash me-1"></i>Listening...';
+            voiceButton.disabled = true;
+        });
+        
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            messageInput.value = transcript;
+            voiceButton.innerHTML = '<i class="fas fa-microphone me-1"></i>Voice Input';
+            voiceButton.disabled = false;
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            voiceButton.innerHTML = '<i class="fas fa-microphone me-1"></i>Voice Input';
+            voiceButton.disabled = false;
+        };
+    } else {
+        voiceButton.style.display = 'none';
+    }
+    
+    function addMessageToChat(sender, message, isUser) {
+        const now = new Date().toLocaleString();
+        const messageClass = isUser ? 'justify-content-end' : 'justify-content-start';
+        const bgClass = isUser ? 'bg-primary text-white' : 'bg-light';
+        
+        const messageHTML = `
+            <div class="mb-3">
+                <div class="d-flex ${messageClass}">
+                    <div class="${bgClass} p-3 rounded-3" style="max-width: 70%;">
+                        <strong>${sender}:</strong> ${message}
+                        <div class="small ${isUser ? 'text-light' : 'text-muted'} mt-1">${now}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        chatContainer.insertAdjacentHTML('beforeend', messageHTML);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

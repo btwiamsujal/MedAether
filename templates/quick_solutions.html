@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Quick Solutions - MedAether{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-5 mb-3">
+                <i class="fas fa-pills text-primary me-3"></i>Quick Solutions
+            </h1>
+            <p class="lead text-muted">Instant remedies for common health problems</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" id="searchInput" 
+                       placeholder="Search health problems...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Problems Grid -->
+    <div class="row" id="problemsGrid">
+        {% for problem in problems %}
+        <div class="col-lg-6 col-xl-4 mb-4 problem-card" data-problem="{{ problem.name.lower() }}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stethoscope me-2"></i>{{ problem.name }}
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <h6 class="text-muted">
+                            <i class="fas fa-info-circle me-2"></i>Description
+                        </h6>
+                        <p class="small">{{ problem.description }}</p>
+                    </div>
+                    
+                    <!-- Medicine -->
+                    <div class="mb-3">
+                        <h6 class="text-danger">
+                            <i class="fas fa-pills me-2"></i>Medicine
+                        </h6>
+                        <p class="small text-muted">{{ problem.medicine }}</p>
+                    </div>
+                    
+                    <!-- Home Remedy -->
+                    <div class="mb-3">
+                        <h6 class="text-success">
+                            <i class="fas fa-home me-2"></i>Home Remedy
+                        </h6>
+                        <p class="small text-muted">{{ problem.home_remedy }}</p>
+                    </div>
+                    
+                    <!-- Precautions -->
+                    <div class="mb-3">
+                        <h6 class="text-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Precautions
+                        </h6>
+                        <p class="small text-muted">{{ problem.precautions }}</p>
+                    </div>
+                </div>
+                
+                <div class="card-footer text-center">
+                    <button class="btn btn-outline-primary btn-sm" onclick="askAIAbout('{{ problem.name }}')">
+                        <i class="fas fa-robot me-1"></i>Ask AI for More Info
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Emergency Notice -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert alert-danger text-center" role="alert">
+                <i class="fas fa-phone-alt me-2" style="font-size: 1.5rem;"></i>
+                <strong>Emergency:</strong> For serious symptoms or medical emergencies, 
+                contact your local emergency services immediately. Don't rely solely on self-medication.
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Resources -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-link text-info me-2"></i>Additional Resources
+                    </h4>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('ai_chat') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-robot me-2"></i>AI Consultation
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('health_plans') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-calendar-check me-2"></i>Health Plans
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('digital_health_card') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-id-card me-2"></i>Health Card
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('profile') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-user me-2"></i>Update Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const problemCards = document.querySelectorAll('.problem-card');
+    
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        problemCards.forEach(card => {
+            const problemName = card.getAttribute('data-problem');
+            const cardText = card.textContent.toLowerCase();
+            
+            if (problemName.includes(searchTerm) || cardText.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+
+function askAIAbout(problemName) {
+    // Redirect to AI chat with pre-filled message
+    const message = encodeURIComponent(`Tell me more about ${problemName} - causes, symptoms, and detailed treatment options.`);
+    window.location.href = `{{ url_for('ai_chat') }}?prefill=${message}`;
+}
+</script>
+{% endblock %}

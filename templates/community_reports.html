@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Community Reports - MedAether{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-5 mb-3">
+                <i class="fas fa-flag text-warning me-3"></i>Community Reports
+            </h1>
+            <p class="lead text-muted">Report local health issues and contribute to community awareness</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Report Form -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Submit New Report
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="issue_title" class="form-label">
+                                    <i class="fas fa-heading me-2"></i>Issue Title
+                                </label>
+                                <input type="text" class="form-control" id="issue_title" name="issue_title" 
+                                       placeholder="e.g., Water contamination in local area" required>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="severity" class="form-label">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Severity
+                                </label>
+                                <select class="form-select" id="severity" name="severity" required>
+                                    <option value="">Select Severity</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="location" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Location
+                            </label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                   placeholder="Specific area, district, or neighborhood" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Detailed Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4" 
+                                    placeholder="Provide detailed information about the health issue, its impact on the community, and any evidence you've observed..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="screenshot" class="form-label">
+                                <i class="fas fa-camera me-2"></i>Supporting Evidence (Optional)
+                            </label>
+                            <input type="file" class="form-control" id="screenshot" name="screenshot" 
+                                   accept="image/*,.pdf,.doc,.docx">
+                            <div class="form-text">Upload photos, documents, or other supporting evidence</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="contact_number" class="form-label">
+                                    <i class="fas fa-phone me-2"></i>Contact Number (Optional)
+                                </label>
+                                <input type="tel" class="form-control" id="contact_number" name="contact_number" 
+                                       placeholder="Your contact number for follow-up">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="affected_people" class="form-label">
+                                    <i class="fas fa-users me-2"></i>Number of People Affected
+                                </label>
+                                <input type="number" class="form-control" id="affected_people" name="affected_people" 
+                                       placeholder="Estimated number" min="1">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guidelines Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Reporting Guidelines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-success">
+                            <i class="fas fa-check-circle me-2"></i>Do Include:
+                        </h6>
+                        <ul class="small text-muted">
+                            <li>Specific location details</li>
+                            <li>Clear description of the issue</li>
+                            <li>Number of people affected</li>
+                            <li>Supporting evidence if available</li>
+                            <li>Contact information for follow-up</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-danger">
+                            <i class="fas fa-times-circle me-2"></i>Avoid:
+                        </h6>
+                        <ul class="small text-muted">
+                            <li>False or unverified information</li>
+                            <li>Personal attacks or bias</li>
+                            <li>Non-health related issues</li>
+                            <li>Duplicate reports</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-info small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Your reports help build a healthier community. All submissions are forwarded to relevant health authorities.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contacts -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-phone-alt me-2"></i>Emergency Contacts
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Emergency:</strong> <a href="tel:911" class="text-decoration-none">911</a>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Health Dept:</strong> <a href="tel:311" class="text-decoration-none">311</a>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Poison Control:</strong> <a href="tel:1-800-222-1222" class="text-decoration-none">1-800-222-1222</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previous Reports -->
+    {% if reports %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="mb-4">
+                <i class="fas fa-history text-primary me-2"></i>Your Previous Reports
+            </h3>
+            
+            {% for report in reports %}
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">{{ report.issue_title }}</h6>
+                            <p class="text-muted small mb-1">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ report.location }}
+                                <span class="ms-3">
+                                    <i class="fas fa-calendar me-1"></i>{{ report.submitted_at.strftime('%Y-%m-%d %H:%M') }}
+                                </span>
+                            </p>
+                            <p class="small mb-0">{{ report.description[:100] }}{% if report.description|length > 100 %}...{% endif %}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-{% if report.severity == 'urgent' %}danger{% elif report.severity == 'high' %}warning{% elif report.severity == 'medium' %}info{% else %}secondary{% endif %} me-2">
+                                {{ report.severity.title() }}
+                            </span>
+                            <span class="badge bg-{% if report.status == 'resolved' %}success{% elif report.status == 'in_progress' %}primary{% else %}secondary{% endif %}">
+                                {{ report.status.replace('_', ' ').title() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Community Impact Stats -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-chart-pie text-success me-2"></i>Community Impact
+                    </h4>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="bg-primary text-white p-3 rounded">
+                                <h3 class="mb-1">1,247</h3>
+                                <small>Total Reports</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="bg-success text-white p-3 rounded">
+                                <h3 class="mb-1">892</h3>
+                                <small>Resolved Issues</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="bg-info text-white p-3 rounded">
+                                <h3 class="mb-1">234</h3>
+                                <small>In Progress</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="bg-warning text-white p-3 rounded">
+                                <h3 class="mb-1">121</h3>
+                                <small>Under Review</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation and enhancement
+    const form = document.querySelector('form');
+    const severitySelect = document.getElementById('severity');
+    
+    // Add dynamic styling based on severity selection
+    severitySelect.addEventListener('change', function() {
+        const card = document.querySelector('.card');
+        
+        // Remove existing severity classes
+        card.classList.remove('border-warning', 'border-danger', 'border-info', 'border-secondary');
+        
+        // Add new class based on selection
+        switch(this.value) {
+            case 'urgent':
+                card.classList.add('border-danger');
+                break;
+            case 'high':
+                card.classList.add('border-warning');
+                break;
+            case 'medium':
+                card.classList.add('border-info');
+                break;
+            case 'low':
+                card.classList.add('border-secondary');
+                break;
+        }
+    });
+    
+    // Character count for description
+    const descriptionTextarea = document.getElementById('description');
+    const charCountDiv = document.createElement('div');
+    charCountDiv.className = 'form-text';
+    charCountDiv.id = 'charCount';
+    descriptionTextarea.parentNode.appendChild(charCountDiv);
+    
+    descriptionTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        charCountDiv.textContent = `${count}/1000 characters`;
+        
+        if (count > 800) {
+            charCountDiv.classList.add('text-warning');
+        } else {
+            charCountDiv.classList.remove('text-warning');
+        }
+    });
+    
+    // Trigger initial character count
+    descriptionTextarea.dispatchEvent(new Event('input'));
+});
+</script>
+{% endblock %}

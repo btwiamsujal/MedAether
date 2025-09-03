@@ -53,7 +53,13 @@ if app.config['OPENAI_API_KEY'] and OpenAI is not None:
     openai_client = OpenAI(api_key=app.config['OPENAI_API_KEY'])
 
 # Google Translate
-# translator = Translator()
+translator = None
+if Translator is not None:
+    try:
+        translator = Translator()
+    except Exception as e:
+        print(f"Failed to initialize translator: {e}")
+        translator = None
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -247,18 +253,35 @@ def digital_health_card():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
+    # Get fresh user data from database
     user = db.users.find_one({'_id': ObjectId(session['user_id'])})
     
-    # Calculate health status based on medical history and current conditions
+    # Always recalculate health status to ensure it's current
     health_status = calculate_health_status(user)
     
-    # Update user's health status in database
-    db.users.update_one(
-        {'_id': ObjectId(session['user_id'])},
-        {'$set': {'health_status': health_status}}
-    )
+    # Update user's health status in database if it changed
+    current_status = user.get('health_status')
+    if current_status != health_status:
+        db.users.update_one(
+            {'_id': ObjectId(session['user_id'])},
+            {'$set': {'health_status': health_status, 'health_status_updated': datetime.utcnow()}}
+        )
+        # Refresh user data with updated status
+        user = db.users.find_one({'_id': ObjectId(session['user_id'])})
     
-    return render_template('digital_health_card.html', user=user, health_status=health_status)
+    # Get health status configuration for display
+    from config import HEALTH_STATUS_CONFIG
+    status_config = HEALTH_STATUS_CONFIG.get(health_status, {
+        'label': 'Unknown',
+        'description': 'Status could not be determined',
+        'color': '#6c757d',
+        'icon': 'question-circle'
+    })
+    
+    return render_template('digital_health_card.html', 
+                         user=user, 
+                         health_status=health_status,
+                         status_config=status_config)
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -315,8 +338,11 @@ def ai_chat():
         user_message = request.form['message']
         language = request.form.get('language', 'en')
         
-        # Get AI response
-        ai_response = get_ai_medical_advice(user_message, language)
+        # Get user information for personalized advice
+        user = db.users.find_one({'_id': ObjectId(session['user_id'])})
+        
+        # Get AI response with user context
+        ai_response = get_ai_medical_advice(user_message, language, user)
         
         # Save chat history
         chat_data = {
@@ -335,10 +361,49 @@ def ai_chat():
     
     return render_template('ai_chat.html', chat_history=chat_history)
 
-def get_ai_medical_advice(message, language='en'):
-    """Get medical advice from AI (OpenAI GPT or fallback)"""
+def get_ai_medical_advice(message, language='en', user=None):
+    """Get medical advice from AI (OpenAI GPT or fallback) with user context"""
     try:
-        if openai_client:
+        if openai_client and user:
+            # Create user context for personalized advice
+            user_context = f"""
+            User Profile:
+            - Age: {user.get('age', 'Unknown')}
+            - Gender: {user.get('gender', 'Unknown')}
+            - Medical History: {', '.join(user.get('medical_history', [])) if user.get('medical_history') else 'No significant medical history'}
+            - Health Status: {user.get('health_status', 'Unknown')}
+            - Blood Group: {user.get('blood_group', 'Unknown')}
+            """
+            
+            system_content = f"""You are MedAether AI, a medical assistant. Provide helpful health advice and information based on the user's profile.
+            
+            {user_context}
+            
+            Important guidelines:
+            - Consider the user's age, gender, and medical history when providing advice
+            - If the user has serious medical conditions (like diabetes, heart disease), mention their relevance to current symptoms
+            - Always remind users to consult healthcare professionals for serious conditions
+            - Keep responses concise, informative, and empathetic
+            - Do not provide specific drug dosages without proper medical consultation
+            - Include relevant precautions and when to seek immediate medical help
+            - Personalize your response based on their medical history
+            """
+            
+            response = openai_client.chat.completions.create(
+                model=app.config['OPENAI_MODEL'],
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_content
+                    },
+                    {"role": "user", "content": message}
+                ],
+                max_tokens=600,
+                temperature=0.3
+            )
+            ai_response = response.choices[0].message.content
+        elif openai_client:
+            # Basic AI response without user context
             response = openai_client.chat.completions.create(
                 model=app.config['OPENAI_MODEL'],
                 messages=[
@@ -357,14 +422,25 @@ def get_ai_medical_advice(message, language='en'):
             ai_response = response.choices[0].message.content
         else:
             # Fallback response when API is not configured
-            ai_response = """I'm here to help with general health information. For your specific concern, I recommend:
-            
-            1. Monitor your symptoms carefully
-            2. Stay hydrated and get adequate rest
-            3. Consult a healthcare professional for personalized advice
-            4. Seek immediate medical attention if symptoms worsen
-            
-            Please note: This is general guidance only and not a substitute for professional medical consultation."""
+            if user and user.get('medical_history'):
+                conditions = ', '.join(user.get('medical_history', []))
+                ai_response = f"""I'm here to help with general health information. Based on your medical history ({conditions}), I recommend:
+                
+                1. Monitor your symptoms carefully, especially considering your existing conditions
+                2. Stay hydrated and get adequate rest
+                3. Consult your healthcare professional for personalized advice
+                4. Seek immediate medical attention if symptoms worsen or interact with your existing conditions
+                
+                Please note: This is general guidance only and not a substitute for professional medical consultation, especially given your medical history."""
+            else:
+                ai_response = """I'm here to help with general health information. For your specific concern, I recommend:
+                
+                1. Monitor your symptoms carefully
+                2. Stay hydrated and get adequate rest
+                3. Consult a healthcare professional for personalized advice
+                4. Seek immediate medical attention if symptoms worsen
+                
+                Please note: This is general guidance only and not a substitute for professional medical consultation."""
         
         # Translate if needed
         if language != 'en':
@@ -382,18 +458,60 @@ def calculate_health_status(user):
     """Calculate user's health status based on medical history and conditions"""
     medical_history = user.get('medical_history', [])
     
-    serious_conditions = ['diabetes', 'heart disease', 'cancer', 'kidney disease', 'liver disease']
-    moderate_conditions = ['hypertension', 'asthma', 'arthritis', 'thyroid', 'anxiety', 'depression']
+    # Serious conditions that require immediate medical attention
+    serious_conditions = [
+        'diabetes', 'heart disease', 'cancer', 'kidney disease', 'liver disease',
+        'stroke', 'heart attack', 'coronary artery disease', 'chronic kidney disease',
+        'cirrhosis', 'heart failure', 'chronic obstructive pulmonary disease', 'copd',
+        'tuberculosis', 'tb', 'hiv', 'aids', 'leukemia', 'lymphoma', 'brain tumor',
+        'liver cancer', 'lung cancer', 'breast cancer', 'prostate cancer',
+        'chronic liver disease', 'end stage renal disease', 'cardiomyopathy',
+        'pulmonary embolism', 'deep vein thrombosis', 'aortic aneurysm'
+    ]
+    
+    # Moderate conditions requiring monitoring
+    moderate_conditions = [
+        'hypertension', 'asthma', 'arthritis', 'thyroid', 'anxiety', 'depression',
+        'high blood pressure', 'high cholesterol', 'osteoporosis', 'fibromyalgia',
+        'migraines', 'sleep apnea', 'acid reflux', 'irritable bowel syndrome', 'ibs',
+        'rheumatoid arthritis', 'osteoarthritis', 'hypothyroidism', 'hyperthyroidism',
+        'bipolar disorder', 'schizophrenia', 'epilepsy', 'seizures', 'chronic pain',
+        'psoriasis', 'eczema', 'crohn disease', 'ulcerative colitis', 'gallstones',
+        'kidney stones', 'chronic fatigue syndrome', 'lupus', 'multiple sclerosis',
+        'parkinson', 'alzheimer', 'dementia', 'glaucoma', 'cataracts'
+    ]
+    
+    # Mild conditions that don't significantly affect daily life
+    mild_conditions = [
+        'allergies', 'seasonal allergies', 'mild asthma', 'occasional headaches',
+        'minor joint pain', 'occasional insomnia', 'hay fever', 'sinusitis',
+        'minor back pain', 'vitamin deficiency', 'iron deficiency', 'anemia'
+    ]
+    
+    if not medical_history:
+        return 'green'
     
     # Check for serious conditions
     for condition in serious_conditions:
-        if any(condition.lower() in hist.lower() for hist in medical_history):
-            return 'red'
+        for hist in medical_history:
+            if condition.lower() in hist.lower():
+                return 'red'
     
     # Check for moderate conditions
     for condition in moderate_conditions:
-        if any(condition.lower() in hist.lower() for hist in medical_history):
-            return 'yellow'
+        for hist in medical_history:
+            if condition.lower() in hist.lower():
+                return 'yellow'
+    
+    # Check for mild conditions
+    for condition in mild_conditions:
+        for hist in medical_history:
+            if condition.lower() in hist.lower():
+                return 'yellow'  # Even mild conditions warrant yellow status
+    
+    # If medical history exists but no specific conditions matched, assume yellow
+    if medical_history:
+        return 'yellow'
     
     # Default to green (healthy)
     return 'green'

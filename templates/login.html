@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Login - MedAether{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center min-vh-100 align-items-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-heartbeat text-primary" style="font-size: 3rem;"></i>
+                    <h2 class="mt-2">MedAether</h2>
+                    <p class="text-muted">AI Driven Public Health Chatbot</p>
+                </div>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-2">Don't have an account?</p>
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus me-2"></i>Sign Up
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Information -->
+        <div class="card mt-4 shadow">
+            <div class="card-body">
+                <h5 class="card-title text-center">
+                    <i class="fas fa-info-circle text-info me-2"></i>About MedAether
+                </h5>
+                <p class="card-text text-center small">
+                    Your AI-powered health companion providing medical guidance, 
+                    community health reporting, and personalized health management.
+                </p>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <i class="fas fa-robot text-primary"></i>
+                        <p class="small mt-1">AI Chat</p>
+                    </div>
+                    <div class="col-4">
+                        <i class="fas fa-users text-success"></i>
+                        <p class="small mt-1">Community</p>
+                    </div>
+                    <div class="col-4">
+                        <i class="fas fa-shield-alt text-warning"></i>
+                        <p class="small mt-1">Health Card</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

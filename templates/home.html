@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Home - MedAether{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="bg-primary text-white p-5 rounded-3 shadow">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-heartbeat me-3"></i>Welcome to MedAether
+                </h1>
+                <p class="lead mb-4">Your AI-Driven Public Health Companion</p>
+                <p class="mb-0">Get personalized health guidance, connect with community health resources, and manage your digital health profile.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Information -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">
+                        <i class="fas fa-info-circle text-info me-2"></i>About MedAether
+                    </h2>
+                    
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-robot text-primary" style="font-size: 2.5rem;"></i>
+                            <h5 class="mt-2">AI-Powered Assistance</h5>
+                            <p class="text-muted">Get instant medical guidance through our advanced AI chatbot with multilingual support.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-users text-success" style="font-size: 2.5rem;"></i>
+                            <h5 class="mt-2">Community Health</h5>
+                            <p class="text-muted">Report local health issues and contribute to community-wide health awareness.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-id-card text-warning" style="font-size: 2.5rem;"></i>
+                            <h5 class="mt-2">Digital Health Card</h5>
+                            <p class="text-muted">Maintain your digital health profile with color-coded status indicators.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Options -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-comments text-primary me-2"></i>Chat Options
+            </h2>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow chat-option-card">
+                <div class="card-body text-center p-4">
+                    <i class="fab fa-telegram text-primary" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3 mb-3">Telegram Chat Integration</h4>
+                    <p class="text-muted mb-4">Connect with our Telegram bot for quick health consultations on-the-go.</p>
+                    <a href="https://t.me/medaether_bot" target="_blank" class="btn btn-primary btn-lg">
+                        <i class="fab fa-telegram me-2"></i>Open Telegram Bot
+                    </a>
+                    <div class="mt-3">
+                        <small class="text-muted">Search for @medaether_bot on Telegram</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow chat-option-card">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-robot text-success" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3 mb-3">MedAether AI Chat</h4>
+                    <p class="text-muted mb-4">Chat with our AI assistant in multiple languages with text and voice support for medical problems.</p>
+                    <a href="{{ url_for('ai_chat') }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-comments me-2"></i>Start AI Chat
+                    </a>
+                    <div class="mt-3">
+                        <small class="text-muted">Multilingual support available</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Features -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-tachometer-alt text-primary me-2"></i>Quick Access
+            </h2>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100 text-center shadow-sm feature-card">
+                <div class="card-body">
+                    <i class="fas fa-pills text-primary" style="font-size: 2rem;"></i>
+                    <h6 class="mt-2 mb-3">Quick Solutions</h6>
+                    <p class="small text-muted mb-3">Instant remedies for common health problems</p>
+                    <a href="{{ url_for('quick_solutions') }}" class="btn btn-outline-primary btn-sm">
+                        View Solutions
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100 text-center shadow-sm feature-card">
+                <div class="card-body">
+                    <i class="fas fa-calendar-check text-success" style="font-size: 2rem;"></i>
+                    <h6 class="mt-2 mb-3">Health Plans</h6>
+                    <p class="small text-muted mb-3">Personalized health and wellness plans</p>
+                    <a href="{{ url_for('health_plans') }}" class="btn btn-outline-success btn-sm">
+                        View Plans
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100 text-center shadow-sm feature-card">
+                <div class="card-body">
+                    <i class="fas fa-flag text-warning" style="font-size: 2rem;"></i>
+                    <h6 class="mt-2 mb-3">Report Issues</h6>
+                    <p class="small text-muted mb-3">Report local health concerns to authorities</p>
+                    <a href="{{ url_for('community_reports') }}" class="btn btn-outline-warning btn-sm">
+                        Submit Report
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100 text-center shadow-sm feature-card">
+                <div class="card-body">
+                    <i class="fas fa-id-card text-info" style="font-size: 2rem;"></i>
+                    <h6 class="mt-2 mb-3">Health Card</h6>
+                    <p class="small text-muted mb-3">Your digital health status and profile</p>
+                    <a href="{{ url_for('digital_health_card') }}" class="btn btn-outline-info btn-sm">
+                        View Card
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Tips Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h3 class="text-center mb-4">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Daily Health Tips
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-glass-water text-primary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Stay Hydrated</h6>
+                            <p class="small text-muted">Drink at least 8 glasses of water daily for optimal health.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-running text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Exercise Regularly</h6>
+                            <p class="small text-muted">30 minutes of daily exercise can improve your overall well-being.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-moon text-info" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Get Enough Sleep</h6>
+                            <p class="small text-muted">7-8 hours of quality sleep is essential for good health.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-option-card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+}
+</style>
+{% endblock %}

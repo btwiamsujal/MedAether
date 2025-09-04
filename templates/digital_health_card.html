@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Health Card - MedAether{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-5 mb-3">
+                <i class="fas fa-id-card text-info me-3"></i>Digital Health Card
+            </h1>
+            <p class="lead text-muted">Your personal health status and medical profile</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Health Card -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-lg border-{% if health_status == 'green' %}success{% elif health_status == 'yellow' %}warning{% else %}danger{% endif %}" style="border-width: 3px;">
+                <div class="card-header bg-{% if health_status == 'green' %}success{% elif health_status == 'yellow' %}warning{% else %}danger{% endif %} text-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">
+                                <i class="fas fa-id-card me-2"></i>MedAether Health Card
+                            </h3>
+                        </div>
+                        <div class="col-auto">
+                            <div class="health-status-indicator bg-white text-dark p-2 rounded">
+                                <strong>Status: 
+                                    {% if health_status == 'green' %}
+                                        <span class="text-success">HEALTHY</span>
+                                    {% elif health_status == 'yellow' %}
+                                        <span class="text-warning">MODERATE</span>
+                                    {% else %}
+                                        <span class="text-danger">ATTENTION NEEDED</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Personal Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <div class="profile-avatar bg-{% if health_status == 'green' %}success{% elif health_status == 'yellow' %}warning{% else %}danger{% endif %} text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                                <i class="fas fa-user" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <h4 class="mb-2">{{ user.name }}</h4>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <p class="mb-1"><strong>Age:</strong> {{ user.age }} years</p>
+                                    <p class="mb-1"><strong>Gender:</strong> {{ user.gender.title() }}</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
+                                    <p class="mb-1"><strong>Member Since:</strong> {{ user.created_at.strftime('%B %Y') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Status Description -->
+                    <div class="alert alert-{% if health_status == 'green' %}success{% elif health_status == 'yellow' %}warning{% else %}danger{% endif %}" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-{% if health_status == 'green' %}check-circle{% elif health_status == 'yellow' %}exclamation-triangle{% else %}exclamation-circle{% endif %} me-2"></i>
+                            Health Status: 
+                            {% if health_status == 'green' %}
+                                Healthy / Fit
+                            {% elif health_status == 'yellow' %}
+                                Moderate Health Issues
+                            {% else %}
+                                Serious Medical Condition
+                            {% endif %}
+                        </h6>
+                        <p class="mb-0">
+                            {% if health_status == 'green' %}
+                                You're in good health! Continue maintaining your healthy lifestyle and regular checkups.
+                            {% elif health_status == 'yellow' %}
+                                You have some health conditions that require monitoring. Follow your treatment plan and regular medical consultations.
+                            {% else %}
+                                You have serious medical conditions that require immediate and ongoing medical attention. Please follow all medical advice strictly.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Medical History -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-history text-primary me-2"></i>Medical History
+                        </h5>
+                        {% if user.medical_history %}
+                        <div class="row">
+                            {% for condition in user.medical_history %}
+                            <div class="col-md-6 mb-2">
+                                <div class="bg-light p-2 rounded">
+                                    <i class="fas fa-dot-circle text-primary me-2"></i>{{ condition }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No medical history recorded.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="text-center">
+                        <div class="bg-light p-3 rounded d-inline-block">
+                            <div id="qrcode" style="width: 150px; height: 150px; margin: auto;"></div>
+                            <p class="small text-muted mt-2">Scan QR code for emergency access to health information</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer text-center">
+                    <button class="btn btn-outline-primary me-2" onclick="downloadHealthCard()">
+                        <i class="fas fa-download me-2"></i>Download Card
+                    </button>
+                    <button class="btn btn-outline-success me-2" onclick="shareHealthCard()">
+                        <i class="fas fa-share-alt me-2"></i>Share Card
+                    </button>
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-edit me-2"></i>Update Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Status Legend & Actions -->
+        <div class="col-md-4 mb-4">
+            <!-- Status Legend -->
+            <div class="card shadow mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-palette me-2"></i>Health Status Guide
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                            <div>
+                                <strong class="text-success">Green - Healthy / Fit</strong>
+                                <p class="small text-muted mb-0">No major health concerns</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                            <div>
+                                <strong class="text-warning">Yellow - Moderate Issues</strong>
+                                <p class="small text-muted mb-0">Some health conditions requiring monitoring</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-danger rounded-circle me-3" style="width: 20px; height: 20px;"></div>
+                            <div>
+                                <strong class="text-danger">Red - Serious Condition</strong>
+                                <p class="small text-muted mb-0">Requires immediate medical attention</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('ai_chat') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-robot me-2"></i>Consult AI Doctor
+                        </a>
+                        <a href="{{ url_for('health_plans') }}" class="btn btn-outline-success">
+                            <i class="fas fa-calendar-check me-2"></i>View Health Plans
+                        </a>
+                        <a href="{{ url_for('quick_solutions') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-pills me-2"></i>Quick Remedies
+                        </a>
+                        <button class="btn btn-outline-info" onclick="updateHealthStatus()">
+                            <i class="fas fa-sync me-2"></i>Refresh Status
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Information -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-phone-alt me-2"></i>Emergency Contacts
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p class="mb-1"><strong>Emergency:</strong> <a href="tel:911">911</a></p>
+                        <p class="mb-1"><strong>Personal Doctor:</strong> <span class="text-muted">Add in profile</span></p>
+                        <p class="mb-0"><strong>Health Insurance:</strong> <span class="text-muted">Add in profile</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Metrics -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Health Metrics Overview
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-weight text-primary" style="font-size: 2rem;"></i>
+                                <h5 class="mt-2">Weight</h5>
+                                <p class="text-muted">{{ user.get('current_weight', 'Not Set') }} kg</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-heartbeat text-danger" style="font-size: 2rem;"></i>
+                                <h5 class="mt-2">Blood Pressure</h5>
+                                <p class="text-muted">{{ user.get('blood_pressure', 'Not Recorded') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-tint text-info" style="font-size: 2rem;"></i>
+                                <h5 class="mt-2">Blood Sugar</h5>
+                                <p class="text-muted">{{ user.get('blood_sugar', 'Not Recorded') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-thermometer-half text-warning" style="font-size: 2rem;"></i>
+                                <h5 class="mt-2">Temperature</h5>
+                                <p class="text-muted">{{ user.get('body_temperature', 'Normal') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-primary" onclick="addHealthMetrics()">
+                            <i class="fas fa-plus me-2"></i>Add/Update Metrics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Health Metrics Modal -->
+<div class="modal fade" id="healthMetricsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-chart-line me-2"></i>Update Health Metrics
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="healthMetricsForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="current_weight" class="form-label">Current Weight (kg)</label>
+                            <input type="number" class="form-control" id="current_weight" name="current_weight" step="0.1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="height" class="form-label">Height (cm)</label>
+                            <input type="number" class="form-control" id="height" name="height">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="blood_pressure" class="form-label">Blood Pressure (mmHg)</label>
+                            <input type="text" class="form-control" id="blood_pressure" name="blood_pressure" 
+                                   placeholder="120/80">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="blood_sugar" class="form-label">Blood Sugar (mg/dL)</label>
+                            <input type="number" class="form-control" id="blood_sugar" name="blood_sugar">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="body_temperature" class="form-label">Body Temperature (°F)</label>
+                            <input type="number" class="form-control" id="body_temperature" name="body_temperature" 
+                                   step="0.1" placeholder="98.6">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="heart_rate" class="form-label">Heart Rate (BPM)</label>
+                            <input type="number" class="form-control" id="heart_rate" name="heart_rate">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveHealthMetrics()">
+                    <i class="fas fa-save me-2"></i>Save Metrics
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Generate QR Code with user health information
+    const qr = new QRious({
+        element: document.getElementById('qrcode'),
+        value: JSON.stringify({
+            name: '{{ user.name }}',
+            age: {{ user.age }},
+            gender: '{{ user.gender }}',
+            health_status: '{{ health_status }}',
+            medical_history: {{ user.medical_history|tojson }},
+            emergency_contact: '{{ user.get("emergency_contact", "Not provided") }}',
+            generated: new Date().toISOString()
+        }),
+        size: 150,
+        foreground: '#0d6efd',
+        background: '#ffffff'
+    });
+});
+
+function downloadHealthCard() {
+    // Create a printable version of the health card
+    const printWindow = window.open('', '_blank');
+    const healthCardContent = document.querySelector('.card.shadow-lg').outerHTML;
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>MedAether Health Card - {{ user.name }}</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body { font-family: Arial, sans-serif; }
+                .card { border: 3px solid #{% if health_status == 'green' %}198754{% elif health_status == 'yellow' %}ffc107{% else %}dc3545{% endif %}; }
+            </style>
+        </head>
+        <body class="p-4">
+            <div class="container">
+                ${healthCardContent}
+                <div class="text-center mt-3">
+                    <small class="text-muted">Generated on ${new Date().toLocaleDateString()}</small>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    setTimeout(() => {
+        printWindow.print();
+    }, 500);
+}
+
+function shareHealthCard() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'My MedAether Health Card',
+            text: 'Check out my digital health card from MedAether',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy URL to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Health card URL copied to clipboard!');
+        });
+    }
+}
+
+function addHealthMetrics() {
+    const modal = new bootstrap.Modal(document.getElementById('healthMetricsModal'));
+    modal.show();
+}
+
+function saveHealthMetrics() {
+    const form = document.getElementById('healthMetricsForm');
+    const formData = new FormData(form);
+    
+    // Convert FormData to JSON
+    const metrics = {};
+    for (let [key, value] of formData.entries()) {
+        if (value) {
+            metrics[key] = value;
+        }
+    }
+    
+    // Send to server
+    fetch('/update-health-metrics', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(metrics)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Health metrics updated successfully!');
+            location.reload(); // Reload to see updated metrics
+        } else {
+            alert('Failed to update metrics. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('healthMetricsModal'));
+    modal.hide();
+}
+
+function updateHealthStatus() {
+    // Trigger a recalculation of health status
+    fetch('/update-health-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Health status updated!');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %}

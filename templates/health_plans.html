@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Health Plans - MedAether{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-5 mb-3">
+                <i class="fas fa-calendar-check text-success me-3"></i>Health Plans
+            </h1>
+            <p class="lead text-muted">Personalized preventive healthcare plans for better living</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" id="searchInput" 
+                       placeholder="Search health plans...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Plans Grid -->
+    <div class="row" id="plansGrid">
+        {% for plan in plans %}
+        <div class="col-lg-6 mb-4 plan-card" data-plan="{{ plan.name.lower() }}">
+            <div class="card h-100 shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-1">
+                        <i class="fas fa-clipboard-list me-2"></i>{{ plan.name }}
+                    </h4>
+                    <p class="mb-0 small">{{ plan.description }}</p>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Diet Section -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">
+                            <i class="fas fa-utensils me-2"></i>Diet Guidelines
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            <p class="small mb-0">{{ plan.diet }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Section -->
+                    <div class="mb-4">
+                        <h6 class="text-warning">
+                            <i class="fas fa-dumbbell me-2"></i>Exercise Routine
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            <p class="small mb-0">{{ plan.exercise }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Lifestyle Section -->
+                    <div class="mb-3">
+                        <h6 class="text-info">
+                            <i class="fas fa-heart me-2"></i>Lifestyle Changes
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            <p class="small mb-0">{{ plan.lifestyle }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-6">
+                            <button class="btn btn-outline-success btn-sm w-100" onclick="adoptPlan('{{ plan.name }}')">
+                                <i class="fas fa-check me-1"></i>Adopt Plan
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="consultAI('{{ plan.name }}')">
+                                <i class="fas fa-robot me-1"></i>Ask AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Personal Health Goals Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-target me-2"></i>Personal Health Goals
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form id="healthGoalsForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="currentWeight" class="form-label">Current Weight (kg)</label>
+                                <input type="number" class="form-control" id="currentWeight" name="currentWeight">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="targetWeight" class="form-label">Target Weight (kg)</label>
+                                <input type="number" class="form-control" id="targetWeight" name="targetWeight">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="healthGoal" class="form-label">Primary Health Goal</label>
+                                <select class="form-select" id="healthGoal" name="healthGoal">
+                                    <option value="">Select Goal</option>
+                                    <option value="weight_loss">Weight Loss</option>
+                                    <option value="weight_gain">Weight Gain</option>
+                                    <option value="muscle_building">Muscle Building</option>
+                                    <option value="general_fitness">General Fitness</option>
+                                    <option value="disease_prevention">Disease Prevention</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="activityLevel" class="form-label">Activity Level</label>
+                                <select class="form-select" id="activityLevel" name="activityLevel">
+                                    <option value="sedentary">Sedentary</option>
+                                    <option value="light">Light Activity</option>
+                                    <option value="moderate">Moderate Activity</option>
+                                    <option value="active">Very Active</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-info">
+                                <i class="fas fa-magic me-2"></i>Generate Personalized Plan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Tracking Tips -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-chart-line text-primary me-2"></i>Health Tracking Tips
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-calendar-day text-primary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Daily Monitoring</h6>
+                            <p class="small text-muted">Track your progress daily with small, achievable goals.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-chart-bar text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Progress Tracking</h6>
+                            <p class="small text-muted">Use the Digital Health Card to monitor your overall health status.</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-users-cog text-info" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Professional Guidance</h6>
+                            <p class="small text-muted">Consult healthcare professionals for personalized advice.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const planCards = document.querySelectorAll('.plan-card');
+    const healthGoalsForm = document.getElementById('healthGoalsForm');
+    
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        planCards.forEach(card => {
+            const planName = card.getAttribute('data-plan');
+            const cardText = card.textContent.toLowerCase();
+            
+            if (planName.includes(searchTerm) || cardText.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+    
+    // Health goals form submission
+    healthGoalsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const currentWeight = document.getElementById('currentWeight').value;
+        const targetWeight = document.getElementById('targetWeight').value;
+        const healthGoal = document.getElementById('healthGoal').value;
+        const activityLevel = document.getElementById('activityLevel').value;
+        
+        if (currentWeight && targetWeight && healthGoal) {
+            generatePersonalizedPlan(currentWeight, targetWeight, healthGoal, activityLevel);
+        } else {
+            alert('Please fill in all required fields.');
+        }
+    });
+});
+
+function adoptPlan(planName) {
+    if (confirm(`Do you want to adopt the ${planName}? This will be added to your health profile.`)) {
+        // Here you would typically make an API call to save the adopted plan
+        alert(`${planName} has been adopted! Check your Digital Health Card for updates.`);
+        
+        // You can add AJAX call here to update user's profile
+        fetch('/adopt-plan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ plan_name: planName })
+        }).then(response => response.json())
+        .then(data => {
+            console.log('Plan adopted:', data);
+        }).catch(error => {
+            console.error('Error adopting plan:', error);
+        });
+    }
+}
+
+function consultAI(planName) {
+    // Redirect to AI chat with pre-filled message about the health plan
+    const message = encodeURIComponent(`Can you provide more detailed information about the ${planName} and how I can customize it for my specific needs?`);
+    window.location.href = `{{ url_for('ai_chat') }}?prefill=${message}`;
+}
+
+function generatePersonalizedPlan(currentWeight, targetWeight, healthGoal, activityLevel) {
+    // Generate a personalized plan based on user inputs
+    let planMessage = `Create a personalized health plan for me. Current weight: ${currentWeight}kg, Target weight: ${targetWeight}kg, Goal: ${healthGoal}, Activity level: ${activityLevel}. Please provide detailed diet, exercise, and lifestyle recommendations.`;
+    
+    const message = encodeURIComponent(planMessage);
+    window.location.href = `{{ url_for('ai_chat') }}?prefill=${message}`;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,6 @@
+Flask
+Werkzeug
+pymongo
+python-dotenv
+Flask-Limiter
+requests
